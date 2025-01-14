@@ -254,7 +254,77 @@
 <br/>
 
 ## 07. 글 작성기능 만들기 2
+- server와 db를 연결하고 유저가 server에게 전송한 게시글 정보를 받아서 db에 등록하기
+- 게시글 작성 페이지 만들기 ( /write/page.js )
+  ```javascript
+  export default function Write() {
+    return (
+      <div className="p-20">
+        <h4>글 작성</h4>
+        <form action='/api/write' method="POST">
+          <input type="text" name="title" placeholder="제목을 입력하세요."></input>
+          <input type="text" name="content" placeholder="내용을 입력하세요."></input>
+          <button type="submit">작성완료</button>
+        </form>
+      </div>
+    )
+  }
+  ```
+- 게시글 작성 페이지 css 추가 ( /globals.css )
+  ```css
+  .p-20 {
+    padding: 20px;
+  }
+  input {
+    box-sizing: border-box;
+    padding: 10px;
+    display: block;
+    margin-bottom: 10px;
+  }
+  button {
+    padding: 10px 15px;
+    background: lightgray;
+    border: none;
+    border-radius: 5px;
+  } 
+  ```
+  - write server 만들기 ( pages/api/write )
+  ```javascript
+  import { connectDB } from "@/util/database";
+  
+  export default async function handler(req, res) {
+     // server는 req 와 res를 parameter로 받는다.
+    if (req.method == "GET") {
+      // GET 요청 예외처리
+      console.log('GET요청을 보낼 수 없습니다.');
+      return res.status(400).json("GET 처리실패")
+    } 
 
+    try {
+      const cluster = await connectDB
+      const db = cluster.db('forum');
+      await db.collection('post').insertOne(req.body)
+      // db.collection().insertOne(obj)는 db에 obj를 데이터로 추가한다.
+
+      if (req.body.title == '') {
+        // 제목을 입력하지 않았을 경우 예외처리
+        return res.status(400).json("제목을 입력하세요.")
+      }
+      return res.redirect('/list')
+      // res.redirect('경로')는 유저를 경로로 보낸다.
+    } catch (error) {
+      res.status(500).json(`Server Error: ${error.name}: ${error.message}`)
+    }
+    // try catch 문을 활용하여 예상치 못한 error상황에 대비.
+  }
+
+  /*
+  status code 
+  200은 처리 완료, 
+  400은 처리 실패(유저측 문제), 
+  500은 처리 실패(서버측 문제)
+  */
+  ```
 <br/>
 
 ## 08. 수정기능 만들기 1

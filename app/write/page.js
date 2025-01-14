@@ -1,9 +1,11 @@
 export default function Write() {
   return (
-    <div>
+    <div className="p-20">
       <h4>글 작성</h4>
       <form action='/api/write' method="POST">
-        <button type="submit">버튼</button>
+        <input type="text" name="title" placeholder="제목을 입력하세요."></input>
+        <input type="text" name="content" placeholder="내용을 입력하세요."></input>
+        <button type="submit">작성완료</button>
       </form>
     </div>
   )
