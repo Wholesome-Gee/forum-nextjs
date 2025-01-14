@@ -305,6 +305,7 @@
       const db = cluster.db('forum');
       await db.collection('post').insertOne(req.body)
       // db.collection().insertOne(obj)는 db에 obj를 데이터로 추가한다.
+      // req.body는 요청받은 정보의 객체
 
       if (req.body.title == '') {
         // 제목을 입력하지 않았을 경우 예외처리
