@@ -14,7 +14,7 @@ export default async function List() {
         {
           result.map((item,index)=>{
             return (
-              <div className="list-item">
+              <div className="list-item" key={index}>
                 <Link prefetch={true} href={`/detail/${item._id}`}>
                   <h4>{item.title}</h4>
                 </Link>

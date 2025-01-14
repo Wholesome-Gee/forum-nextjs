@@ -152,8 +152,8 @@
 <br/>
 
 ## 05. 상세페이지 만들기 2 (useRouter)
-- 게시글 목록 페이지(/list)에서 게시글 상세페이지(/detail/[id])로 이동하는 페이지 생성
-- 게시글 목록 페이지(/list)에서 홈 화면으로 돌아가는 버튼 생성
+- 게시글 목록 페이지( /list )에서 게시글 상세페이지(/detail/[id])로 이동하는 페이지 생성
+- 게시글 목록 페이지( /list )에서 홈 화면으로 돌아가는 버튼 생성
 - /list/page.js 수정
   ```javascript
   import { connectDB } from "@/util/database"
@@ -172,7 +172,7 @@
           {
             result.map((item,index)=>{
               return (
-                <div className="list-item">
+                <div className="list-item" key={index}>
                   <Link href={`/detail/${item._id}`}>
                     <h4>{item.title}</h4>
                   </Link>
@@ -213,13 +213,44 @@
           5. router.prefetch('경로') = 경로 페이지 미리 로드 (Link태그의 prefetch속성이 ture인것과 같음.) */
     )
   }
-
   ```
 
 <br/>
 
 ## 06. 글 작성기능 만들기 1 (서버기능 개발은)
-
+- Next JS에서 Server 만들기 ( pages/api/write.js)
+  - Server는 `pages/api/Server이름`으로 만든다.
+  - Server에 만들어놓는 기능들을 API라고 한다.
+  ```javascript
+  export default function handler(req, res) {
+    // server는 req 와 res를 parameter로 받는다.
+    if (req.method == "GET") {
+      console.log('GET요청을 보낼 수 없습니다.');
+      return res.status(400)
+    } 
+    console.log('POST요청을 보냈습니다.');
+    return res.status(200).json("POST 처리성공")
+  }
+  /* status code 
+    1. 200 = 처리 성공
+    2. 400 = 처리 실패 (유저측 원인)
+    3. 500 = 처리 실패 (서버측 원인)  */
+  ```
+- 글 작성 페이지 만들기 ( /write/page.js )
+  ```javascript
+  export default function Write() {
+    return (
+      <div>
+        <h4>글 작성</h4>
+        <form action='/api/write' method="POST">
+        <!-- action = 요청을 보낼 경로 , method = GET / POST 요청방식 -->
+        <!-- form 태그로 GET,POST는 가능하지만 PUT(수정),DELETE(삭제)는 불가능하다.  -->
+          <button type="submit">버튼</button>
+        </form>
+      </div>
+    )
+  }
+  ```
 <br/>
 
 ## 07. 글 작성기능 만들기 2
