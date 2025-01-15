@@ -1,38 +1,43 @@
-# 코딩애플_Next.JS_Part2.게시판
+# 코딩애플\_Next.JS_Part2.게시판
+
 ## 01. 새로운 프로젝트 생성 / MongoDB 셋팅
+
 - 프로젝트 생성하기
   - `npx create-next-app@latest 폴더명`
 - MongoDB
   - MongoDB는 비관계형 데이터베이스
-    - 관계형 DB는 데이터를 엑셀처럼 표에 저장하며,   
+    - 관계형 DB는 데이터를 엑셀처럼 표에 저장하며,  
       SQL언어 사용, 스키마 정의, 정규화 등 사용이 복잡하여  
       주로 안정적인 데이터저장과 운영이 필요한 곳에서 사용
-    - 비관계형 DB는 형식이 자유롭고   
-     SQL언어 사용, 스키마 정의, 정규화 등이 필요없다.   
-     분산처리를 기본적으로 잘해서 SNS서비스 처럼 많은 데이터 입출력이 필요할 때 강점을 보임
+    - 비관계형 DB는 형식이 자유롭고  
+      SQL언어 사용, 스키마 정의, 정규화 등이 필요없다.  
+      분산처리를 기본적으로 잘해서 SNS서비스 처럼 많은 데이터 입출력이 필요할 때 강점을 보임
     - MongoDB는 비관계형 DB이며,  
       collection(비유=폴더)을 만들고 내부에 document(비유=파일)을 만들어서 데이터를 기록하고 저장함
       - ` { 데이터이름1: 값1, 데이터이름2: 값2 ...}
     - 설치방법  
       🔹 http://mongodb.com  
-      🔹 Github ID로 로그인   
-      🔹 왼쪽 `Database Access` 탭에서 DB접속용 계정 생성 (Built-in Role은 Atlas admin 선택)  const User = mongoose.model('User', userSchema);
-      🔹 왼쪽 `Network Access` 탭에서 0.0.0.0/0 (Allow access from anywhere) 생성  
+      🔹 Github ID로 로그인  
+      🔹 왼쪽 `Database Access` 탭에서 DB접속용 계정 생성 (Built-in Role은 Atlas admin 선택) const User = mongoose.model('User', userSchema);
+      🔹 왼쪽 `Network Access` 탭에서 0.0.0.0/0 (Allow access from anywhere) 생성
 
 ## 02. Next.js에서 MongoDB 사용하기
+
 - DB에 데이터 저장하기
   - http://mongodb.com ➡️ **Browse collections** 데이터 조회 가능
   - Cluters(책방) > DB(책꽂이) > Collections(책) > Documents(종이)
 - Next.js에서 MongoDB의 database 불러오기
+
   - `npm i mongodb`
   - /util/database.js 생성 ➡️ mongodb와 connection이 1회만 이루어짐 (서버 open 시)
+
     ```js
-    import { MongoClient } from 'mongodb'
-    const password = encodeURIComponent('wlfyd15643#') 
+    import { MongoClient } from "mongodb";
+    const password = encodeURIComponent("wlfyd15643#");
     // encodeURIComponent는 특수문자를 UTF-8로 인코딩 해준다.
-    const url = `mongodb+srv://jiyong0419:${password}@wholesome-gee.ccwio.mongodb.net/?retryWrites=true&w=majority&appName=Wholesome-Gee`
+    const url = `mongodb+srv://jiyong0419:${password}@wholesome-gee.ccwio.mongodb.net/?retryWrites=true&w=majority&appName=Wholesome-Gee`;
     // MongoDB > Cluster > Connect > Drivers
-    const options = { useNewUrlParser: true }
+    const options = { useNewUrlParser: true };
     // urlParser는 url의 구조를 분석해준다.
     // 프로토콜 ( https, http, ftp 등)
     // 호스트 ( www.naver.com )
@@ -40,51 +45,54 @@
     // 경로 (route)
     // 쿼리스트링 ( ?, & )
     // 프래그먼트 ( # )
-    let connectDB
+    let connectDB;
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       // node환경이 개발모드이면 다음과 같이 실행하라.
       if (!global._mongo) {
-        global._mongo = new MongoClient(url, options).connect()
+        global._mongo = new MongoClient(url, options).connect();
       }
       // global._mongo가 비어있으면 global._mongo를 나의 mongoDB cluster와 연결
-      connectDB = global._mongo
+      connectDB = global._mongo;
     } else {
-      connectDB = new MongoClient(url, options).connect()
+      connectDB = new MongoClient(url, options).connect();
     } // node환경이 개발모드가 아니면(상품모드면) connectDB에 나의 mongoDB cluster를 연결
-    export { connectDB }
+    export { connectDB };
     ```
+
 - page.js 수정
+
   ```js
-  import { connectDB } from "@/util/database.js"
+  import { connectDB } from "@/util/database.js";
   // @는 프로젝트의 경로를 가리킴.
   // NextJS에서 .js 파일을 import할때 확장자명은 생략 가능 ( png, jpg, css, json은 불가능 )
 
   export default async function Home() {
     //  let client = await connectDB;
     //  const db = client.db('forum');
-    let db = (await connectDB).db('forum');
+    let db = (await connectDB).db("forum");
     // db에 접근할 경우 await을 사용하여 해당 지점에서 로드를 끝마치고 다음 명령어를 실행한다고 알림.
     // await을 사용할 경우 해당 함수명 앞엔 비동기 함수임을 알리는 async를 표기해야함
-    let result = await db.collection('post').find().toArray();
+    let result = await db.collection("post").find().toArray();
     // db.collection.find()는 collection내의 조건을 만족하는 document들을 커서로 가리킴.
     // db 데이터 관련 코드는 server Component에서만 사용할 것.
-    
+
     console.log(result);
 
-    return (
-      <div></div>
-    )
+    return <div></div>;
   }
   ```
-<br/>
+
+  <br/>
 
 ## 03. 게시글 목록 조회기능 만들기 (DB 데이터 출력)
+
 - (시작전) 프로그램 만드는 순서
   - 프로그램에 필요한 기능을 전부 정리
   - 쉬운 기능부터 하나씩 개발
     - 기능의 로직을 한글로 설명하고 그것을 코드로 번역하는 연습
 - 목록 페이지 생성 ( /list/page.js )
+
   ```javascript
   import { connectDB } from "@/util/database"
 
@@ -110,33 +118,36 @@
        }
       </div>
     )
-  } 
+  }
   ```
 
 <br/>
 
 ## 04. 상세페이지 만들기 1 (Dynamic route)
+
 - 게시글의 상세페이지로 이동하는 페이지 생성
 - 상세 페이지 생성 ( /detail/[id]/page.js )
+
   - [id]는 nextJS의 dynamic route 사용
   - http://localhost:3000/detail/tomato ➡️ tomato 부분이 id가 됨됨
+
   ```javascript
-  import { connectDB } from "@/util/database"
+  import { connectDB } from "@/util/database";
   import { ObjectId } from "mongodb";
 
-  export default async function Detail(props){
+  export default async function Detail(props) {
     const cluster = await connectDB;
-    const db = cluster.db('forum');
-    const result = await db.collection('post').findOne({
-      _id : new ObjectId((await props.params).id)
-    })
-    
-  /*  1. props는 부모 component로부터 받은 data가 담겨있다.
+    const db = cluster.db("forum");
+    const result = await db.collection("post").findOne({
+      _id: new ObjectId((await props.params).id),
+    });
+
+    /*  1. props는 부모 component로부터 받은 data가 담겨있다.
       2. (await props.porams).id로 유저가 요청한 parameter의 id부분을 가져올 수 있다. 
       3. props > params > id를 꺼내 쓰려면 props.params가 먼저 비동기 처리가 되어야 한다.
       3. findOne({조건})은 조건에 부합한 data를 찾아서 object로 반환
       4. new ObjectId는 mongodb에서 ObjectId를 import해야 사용가능  */
-    
+
     console.log(await props.params);
 
     return (
@@ -145,16 +156,18 @@
         <h4>{result.title}</h4>
         <p>{result.content}</p>
       </div>
-    )
+    );
   }
   ```
 
 <br/>
 
 ## 05. 상세페이지 만들기 2 (useRouter)
+
 - 게시글 목록 페이지( /list )에서 게시글 상세페이지(/detail/[id])로 이동하는 페이지 생성
 - 게시글 목록 페이지( /list )에서 홈 화면으로 돌아가는 버튼 생성
 - /list/page.js 수정
+
   ```javascript
   import { connectDB } from "@/util/database"
   import Link from "next/link";
@@ -185,16 +198,18 @@
            <!-- HomeLink Component 생성 후 호출 -->
       </div>
     )
-  } 
+  }
   ```
 
 - /list/HomeLink.js 파일 생성
+
   - 홈 화면으로 이동시켜주는 component
     - client Component의 파일명은 camelCase로 작성
+
   ```javascript
-  'use client'
-  
-  import { useRouter } from "next/navigation"
+  "use client";
+
+  import { useRouter } from "next/navigation";
   /*  1. React의 use~~~함수를 사용할 것이기에 client Component로 생성
       2. next/navigation에서 useRouter를 import함.  */
 
@@ -203,33 +218,40 @@
     /*  1. usePathname() = 현재 URL출력
         2. useSearchParams() = 현재 URL의 쿼리스트링 출력 
         3. useParams() = [dynamic route]에 입력한 내용 출력력*/
-        
+
     return (
-      <button onClick={()=>{ router.push('/') }}>홈으로</button>
+      <button
+        onClick={() => {
+          router.push("/");
+        }}
+      >
+        홈으로
+      </button>
       /*  1. router.push('경로') = 경로로 이동시킴
           2. router.back() = 이전 페이지로 이동시킴
           3. router.forward() = 앞 페이지로 이동시킴
           4. router.refresh() = 수정된 html 요소만 새로고침
           5. router.prefetch('경로') = 경로 페이지 미리 로드 (Link태그의 prefetch속성이 ture인것과 같음.) */
-    )
+    );
   }
   ```
 
 <br/>
 
 ## 06. 글 작성기능 만들기 1 (서버기능 개발은)
-- Next JS에서 Server 만들기 ( pages/api/write.js)
+
+- Next JS에서 Server 만들기 ( pages/api/post/new.js)
   - Server는 `pages/api/Server이름`으로 만든다.
   - Server에 만들어놓는 기능들을 API라고 한다.
   ```javascript
   export default function handler(req, res) {
     // server는 req 와 res를 parameter로 받는다.
     if (req.method == "GET") {
-      console.log('GET요청을 보낼 수 없습니다.');
-      return res.status(400)
-    } 
-    console.log('POST요청을 보냈습니다.');
-    return res.status(200).json("POST 처리성공")
+      console.log("GET요청을 보낼 수 없습니다.");
+      return res.status(400);
+    }
+    console.log("POST요청을 보냈습니다.");
+    return res.status(200).json("POST 처리성공");
   }
   /* status code 
     1. 200 = 처리 성공
@@ -242,7 +264,7 @@
     return (
       <div>
         <h4>글 작성</h4>
-        <form action='/api/write' method="POST">
+        <form action='/api/post/new' method="POST">
         <!-- action = 요청을 보낼 경로 , method = GET / POST 요청방식 -->
         <!-- form 태그로 GET,POST는 가능하지만 PUT(수정),DELETE(삭제)는 불가능하다.  -->
           <button type="submit">버튼</button>
@@ -251,9 +273,10 @@
     )
   }
   ```
-<br/>
+  <br/>
 
 ## 07. 글 작성기능 만들기 2
+
 - server와 db를 연결하고 유저가 server에게 전송한 게시글 정보를 받아서 db에 등록하기
 - 게시글 작성 페이지 만들기 ( /write/page.js )
   ```javascript
@@ -261,16 +284,17 @@
     return (
       <div className="p-20">
         <h4>글 작성</h4>
-        <form action='/api/write' method="POST">
+        <form action="/api/post/new" method="POST">
           <input type="text" name="title" placeholder="제목을 입력하세요."></input>
           <input type="text" name="content" placeholder="내용을 입력하세요."></input>
           <button type="submit">작성완료</button>
         </form>
       </div>
-    )
+    );
   }
   ```
 - 게시글 작성 페이지 css 추가 ( /globals.css )
+
   ```css
   .p-20 {
     padding: 20px;
@@ -286,35 +310,37 @@
     background: lightgray;
     border: none;
     border-radius: 5px;
-  } 
+  }
   ```
-  - write server 만들기 ( pages/api/write )
+
+  - write server 만들기 ( pages/api/post/new.js )
+
   ```javascript
   import { connectDB } from "@/util/database";
-  
+
   export default async function handler(req, res) {
-     // server는 req 와 res를 parameter로 받는다.
+    // server는 req 와 res를 parameter로 받는다.
     if (req.method == "GET") {
       // GET 요청 예외처리
-      console.log('GET요청을 보낼 수 없습니다.');
-      return res.status(400).json("GET 처리실패")
-    } 
+      console.log("GET요청을 보낼 수 없습니다.");
+      return res.status(400).json("GET 처리실패");
+    }
 
     try {
-      const cluster = await connectDB
-      const db = cluster.db('forum');
-      await db.collection('post').insertOne(req.body)
+      const cluster = await connectDB;
+      const db = cluster.db("forum");
+      await db.collection("post").insertOne(req.body);
       // db.collection().insertOne(obj)는 db에 obj를 데이터로 추가한다.
       // req.body는 요청받은 정보의 객체
 
-      if (req.body.title == '') {
+      if (req.body.title == "") {
         // 제목을 입력하지 않았을 경우 예외처리
-        return res.status(400).json("제목을 입력하세요.")
+        return res.status(400).json("제목을 입력하세요.");
       }
-      return res.redirect('/list')
+      return res.redirect("/list");
       // res.redirect('경로')는 유저를 경로로 보낸다.
     } catch (error) {
-      res.status(500).json(`Server Error: ${error.name}: ${error.message}`)
+      res.status(500).json(`Server Error: ${error.name}: ${error.message}`);
     }
     // try catch 문을 활용하여 예상치 못한 error상황에 대비.
   }
@@ -326,9 +352,113 @@
   500은 처리 실패(서버측 문제)
   */
   ```
-<br/>
+
+  <br/>
 
 ## 08. 수정기능 만들기 1
+
+- 글 목록 페이지에서 게시글 수정 버튼 만들어주기 ( /list/page.js )
+
+  ```javascript
+  import { connectDB } from "@/util/database";
+  import Link from "next/link";
+  import HomeLink from "./HomeLink";
+
+  export default async function List() {
+    const cluster = await connectDB;
+    const db = cluster.db("forum");
+    let result = await db.collection("post").find().toArray();
+
+    console.log(result);
+
+    return (
+      <div className="list-bg">
+        {result.map((item, index) => {
+          return (
+            <div className="list-item" key={index}>
+              <Link prefetch={true} href={`/detail/${item._id}`}>
+                <h4>{item.title}</h4>
+              </Link>
+              <p>{item.content}</p>
+              <Link href={`/edit/${item._id}`}>✏️</Link>
+               <!-- ⬆️ Link 태그 추가 -->
+            </div>
+          );
+        })}
+        <HomeLink />
+      </div>
+    );
+  }
+  ```
+
+- 글 수정페이지 dynamic route로 만들기 ( /edit/[id]/page.js )
+
+  ```javascript
+  import { connectDB } from "@/util/database";
+  import { ObjectId } from "mongodb";
+  import Link from "next/link";
+
+  export default async function Edit(props) {
+    try {
+      let id = (await props.params).id;
+      const db = (await connectDB).db("forum");
+      const result = await db.collection("post").findOne({ _id: new ObjectId(id) });
+
+      if (!result) {
+        return (
+          <div>
+            <h4>잘못된 접근입니다.</h4>
+            <Link href="/list">목록으로 돌아가기</Link>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <h4>수정페이지</h4>
+          <form action="/api/post/edit" method="POST">
+            <input style={{ display: "none" }} name="id" defaultValue={id}></input>
+            <input type="text" name="title" defaultValue={result.title}></input>
+            <input type="text" name="content" defaultValue={result.content}></input>
+            <input type="submit" value="수정하기"></input>
+          </form>
+        </div>
+      );
+    } catch (e) {
+      return (
+        <div>
+          <h4>잘못된 접근입니다.</h4>
+          <Link href="/list">목록으로 돌아가기</Link>
+        </div>
+      );
+    }
+  }
+  ```
+
+- 글 수정 요청을 받아줄 server 만들기 ( pages/api/post/edit.js )
+
+  ```javascript
+  import { connectDB } from "@/util/database";
+  import { ObjectId } from "mongodb";
+
+  export default async function handler(req, res) {
+    if (req.method == "POST") {
+      const changedData = {
+        _id: new ObjectId(req.body.id),
+        title: req.body.title,
+        content: req.body.content,
+      };
+      // db안에 있는 data의 schema 만들어주기
+
+      const db = (await connectDB).db("forum");
+      await db.collection("post").updateOne({ _id: new ObjectId(req.body.id) }, { $set: changedData });
+      // db.collection().updateOne({ filter }, { $set: update data}) = db내에서 조건과 일치하는 data를 수정해준다
+      // $set 은 덮어쓰기 옵션, $inc 는 +1 증가시키는 옵션이다.
+      return res.redirect("/list");
+    }
+    return res.status(400).json("GET 요청은 처리할 수 없습니다.");
+  }
+  ```
 
 <br/>
 

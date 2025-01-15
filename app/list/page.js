@@ -1,29 +1,28 @@
-import { connectDB } from "@/util/database"
+import { connectDB } from "@/util/database";
 import Link from "next/link";
 import HomeLink from "./HomeLink";
 
 export default async function List() {
-  const cluster = await connectDB
-  const db = cluster.db('forum');
-  let result = await db.collection('post').find().toArray();
+  const cluster = await connectDB;
+  const db = cluster.db("forum");
+  let result = await db.collection("post").find().toArray();
 
-  // console.log(result);
+  console.log(result);
 
   return (
     <div className="list-bg">
-        {
-          result.map((item,index)=>{
-            return (
-              <div className="list-item" key={index}>
-                <Link prefetch={true} href={`/detail/${item._id}`}>
-                  <h4>{item.title}</h4>
-                </Link>
-                <p>{item.content}</p>
-              </div>
-            )
-          })
-        }
-        <HomeLink/>
+      {result.map((item, index) => {
+        return (
+          <div className="list-item" key={index}>
+            <Link prefetch={true} href={`/detail/${item._id}`}>
+              <h4>{item.title}</h4>
+            </Link>
+            <p>{item.content}</p>
+            <Link href={`/edit/${item._id}`}>✏️</Link>
+          </div>
+        );
+      })}
+      <HomeLink />
     </div>
-  )
-} 
+  );
+}
