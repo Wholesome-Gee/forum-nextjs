@@ -355,7 +355,7 @@
 
   <br/>
 
-## 08. 수정기능 만들기 1
+## 08~09. 수정기능 만들기 
 
 - 글 목록 페이지에서 게시글 수정 버튼 만들어주기 ( /list/page.js )
 
@@ -462,12 +462,79 @@
 
 <br/>
 
-## 09. 수정기능 만들기 2
-
-<br/>
-
 ## 10. 삭제기능 만들기 1 (Ajax)
+- 글 목록 페이지(/list)에서 🗑️를 클릭하면 게시글이 애니메이션으로 사라지는 기능
+- 애니메이션을 쓰기위해 client component 생성 (/list/ListIem.js)
+  ```javascript
+  'use client'
 
+  import Link from "next/link"
+
+  export default function ListItem(props){
+    let result = props.result
+    return (
+      <div>
+        {
+          result.map((item, index) => 
+            <div className="list-item" key={item._id}>
+              <Link href={'/detail/' + item._id} >
+                <h4>{item.title}</h4>
+              </Link>
+              <Link href={'/edit/' + item._id}> ✏️ </Link>
+              <p>{item.content}</p>
+            </div>
+          )
+        }
+      </div>
+    )
+  }
+  ```
+- 글 목록 페이지 수정 (/list/page.js)
+  ```javascript
+  import { connectDB } from "@/util/database";
+  import HomeLink from "./HomeLink";
+  import ListItem from "./ListItem";
+
+  export default async function List() {
+    const cluster = await connectDB;
+    const db = cluster.db("forum");
+    let result = await db.collection("post").find().toArray();
+
+    console.log(typeof result[0]._id);
+
+    result = result.map((item)=>{
+      item._id = item._id.toString()
+      return item
+    }) 
+  // db에서 받아온 result의 ._id는 문자열처럼 보이지만 
+  // new ObjectId를 통한 BSON (BinaryJSON) 객체이기 때문에
+  // .toString()을 통하여 문자열로 변환해주어야 props로 전달 가능능
+
+    return (
+      <div className="list-bg">
+        <ListItem result={result} />
+        <HomeLink />
+      </div>
+    );
+  }
+  ```
+- useEffect()를 활용하여 db를 받아올 수도 있지만, 검색엔진 노출 측면에서 단점이 있다.
+  - useEffect() 활용 코드 예시
+  ```javascript
+  'use client'
+  export default function ListItem(){
+    useEffect(()=>{
+      let result = (서버에 요청해서 DB데이터 가져오는 코드)
+    },[])
+
+    return (
+      <div>{result}</div>
+    )
+  }
+  ```
+  - useEffect()는 페이지 로드 순서가 html보다 후순위 이다.  
+  즉, html이 다 로드되고나서야 useEffect()가 읽히기때문에  
+  검색엔진 봇들이 정보수집을 못하여 검색노출에 불리하다.
 <br/>
 
 ## 11. 삭제기능 만들기 2 (Ajax 추가내용과 에러처리)
