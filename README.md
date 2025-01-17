@@ -650,7 +650,29 @@
 
 ## 14. JWT, session, OAuth 설명시간
 
-<br/>
+- JWT(Javascript Web Token), Session
+- 유저가 사이트에 로그인 시 Server로부터 요청권을 받게 되는데 요청권 형식에 따라 JWT 혹은 Session이라고 한다.
+- 요청권은 브라우저 Cookie저장소에 문자열로 저장되고, 유저가 Server측에 무언가 요청할 시  
+  자동으로 Cookie 저장소도 같이 전달이 됨.
+- Session
+  - Session은 요청권에 _Session ID_ 만 적혀있다.
+  - 유저가 Server에 무언가 요청 시 Server는 유저로부터 유저정보와 Session ID를 받고,  
+    전달받은 유저정보, Session ID를 DB에 재전달한다.  
+    DB는 전달받은 유저정보와 Session ID 서로 일치하는지 확인 후 응답을 해준다.
+  - Session방식은 보안에 강점이 있지만, DB에 부담이 크다는 단점이 있음.
+- JWT (Javascript Web Token)
+  - JWT는 요청권에 유저에 대한 정보가 hashing되어 있고 (조작방지),
+    유저가 Server에 무언가 요청 시 Server는 요청권의 정보를 확인 후 응답해줌.
+  - JWT방식은 DB에 부담이 적지만, 보안이 취약함.
+- OAuth
+  - 다른 사이트에 등록된 유저의 정보를 가져올 수 있는 권한
+  ```js
+  Gihub에서 Google로그인 시
+  - Github은 유저에게 Google로그인을 요청
+  - 유저는 Google에 로그인하고 Github에게 정보 공유를 허용
+  - Google은 Github에게 유저정보를 공유
+  ```
+  <br/>
 
 ## 15. 회원기능 만들기 : Auth.js 사용한 소셜로그인
 
