@@ -462,9 +462,18 @@
 
 <br/>
 
-## 10~11. 삭제기능 만들기 1,2
+## 10~12. 삭제기능 만들기 1,2,3
 
 - 글 목록 페이지(/list)에서 🗑️를 클릭하면 게시글이 애니메이션으로 사라지는 기능
+- CSS로 애니메이션 동작 전 스타일링 하기 (/globals.css)
+
+  ```css
+  .list-item {
+    opacity: 1;
+    transition: all 1s;
+  }
+  ```
+
 - 애니메이션을 쓰기위해 client component 생성 (/list/ListItem.js)
 
   ```javascript
@@ -484,7 +493,8 @@
             <p>{item.content}</p>
             <Link href={"/edit/" + item._id}> ✏️ </Link>
             <span
-            onClick={() => {
+            onClick={(event) => {
+              <!-- onCleck함수의 parameter인 event는 event가 발생한 지점에 대한 정보를 담고있다. -->
               fetch("/api/post/delete", { method: "DELETE", body: item._id })
               <!-- fetch('url', { method: "GET,POST,DELETE,PUSH", body:"props"}) -->
               <!-- fetch('url', { method: "GET,POST,DELETE,PUSH", body:JSON.stringify(obj/arr)}) -->
@@ -497,8 +507,12 @@
                   }
                 })
                 .then((response) => {
-                  <!-- fetch 요청 성공 시 실행할 코드 -->
                   console.log(response);
+                  <!-- fetch 요청 성공 시 실행할 코드 -->
+                  event.target.parentElement.style.opacity = 0
+                  setTimeout(()=>{
+                    event.target.parentElement.style.display = "none"
+                  },1000)
                 })
                 .catch((error) => {
                   <!-- 인터넷 문제 등으로 실패 시 실행할 코드 -->
@@ -590,9 +604,19 @@
      검색엔진 봇들이 정보수집을 못하여 검색노출에 불리하다.
     <br/>
 
-## 12. 삭제기능 만들기 3 (query string / URL parameter)
-
-<br/>
+- GET요청으로 server에 data 전송하기 (GET으로는 body옵션 사용 불가)
+  - Query String 방식
+    - `fetch('http://localhost:3000?name:"지용"&age:20')`
+    - server에서는 req.query를 통해 data 수신 가능 ( { name:"지용", age:20})
+  - URL parameter 사용하기 ( pages/api/[name]/page.js)
+  - `fetch(api/post/wholesome-gee)`
+    ```javascript
+    export default function handler(req,res){
+      console.log(req.query)
+      // { name:"wholesome-gee"}
+      return res.status.
+    }
+    ```
 
 ## 13. static rendering, dynamic rendering, cache
 

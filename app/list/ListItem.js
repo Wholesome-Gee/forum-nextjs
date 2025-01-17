@@ -14,7 +14,7 @@ export default function ListItem(props) {
           <p>{item.content}</p>
           <Link href={"/edit/" + item._id}> ✏️ </Link>
           <span
-            onClick={() => {
+            onClick={(event) => {
               fetch("/api/post/delete", { method: "DELETE", body: item._id })
                 .then((response) => {
                   if (response.status == 200) {
@@ -26,6 +26,10 @@ export default function ListItem(props) {
                 .then((response) => {
                   console.log(response);
                   // fetch 요청 성공 시 실행할 코드
+                  event.target.parentElement.style.opacity = 0;
+                  setTimeout(() => {
+                    event.target.parentElement.style.display = "none";
+                  }, 1000);
                 })
                 .catch((error) => {
                   //인터넷 문제 등으로 실패 시 실행할 코드
