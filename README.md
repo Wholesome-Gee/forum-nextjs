@@ -355,7 +355,7 @@
 
   <br/>
 
-## 08~09. 수정기능 만들기 
+## 08~09. 수정기능 만들기
 
 - 글 목록 페이지에서 게시글 수정 버튼 만들어주기 ( /list/page.js )
 
@@ -462,34 +462,61 @@
 
 <br/>
 
-## 10. 삭제기능 만들기 1 (Ajax)
+## 10~11. 삭제기능 만들기 1,2
+
 - 글 목록 페이지(/list)에서 🗑️를 클릭하면 게시글이 애니메이션으로 사라지는 기능
-- 애니메이션을 쓰기위해 client component 생성 (/list/ListIem.js)
+- 애니메이션을 쓰기위해 client component 생성 (/list/ListItem.js)
+
   ```javascript
-  'use client'
+  "use client";
 
-  import Link from "next/link"
+  import Link from "next/link";
 
-  export default function ListItem(props){
-    let result = props.result
+  export default function ListItem(props) {
+    let result = props.result;
     return (
       <div>
-        {
-          result.map((item, index) => 
-            <div className="list-item" key={item._id}>
-              <Link href={'/detail/' + item._id} >
-                <h4>{item.title}</h4>
-              </Link>
-              <Link href={'/edit/' + item._id}> ✏️ </Link>
-              <p>{item.content}</p>
-            </div>
-          )
-        }
+        {result.map((item, index) => (
+          <div className="list-item" key={item._id}>
+            <Link href={"/detail/" + item._id}>
+              <h4>{item.title}</h4>
+            </Link>
+            <p>{item.content}</p>
+            <Link href={"/edit/" + item._id}> ✏️ </Link>
+            <span
+            onClick={() => {
+              fetch("/api/post/delete", { method: "DELETE", body: item._id })
+              <!-- fetch('url', { method: "GET,POST,DELETE,PUSH", body:"props"}) -->
+              <!-- fetch('url', { method: "GET,POST,DELETE,PUSH", body:JSON.stringify(obj/arr)}) -->
+                .then((response) => {
+                  if (response.status == 200) {
+                    return response.json();
+                    <!-- response는 Response객체이며 .json()을 통해 json형식으로 변환한다. -->
+                  } else {
+                  <!-- 서버가 에러코드 전송 시 실행할 코드 -->
+                  }
+                })
+                .then((response) => {
+                  <!-- fetch 요청 성공 시 실행할 코드 -->
+                  console.log(response);
+                })
+                .catch((error) => {
+                  <!-- 인터넷 문제 등으로 실패 시 실행할 코드 -->
+                  console.log(error);
+                });
+            }}
+          >
+            🗑️
+            </span>
+          </div>
+        ))}
       </div>
-    )
+    );
   }
   ```
+
 - 글 목록 페이지 수정 (/list/page.js)
+
   ```javascript
   import { connectDB } from "@/util/database";
   import HomeLink from "./HomeLink";
@@ -500,15 +527,13 @@
     const db = cluster.db("forum");
     let result = await db.collection("post").find().toArray();
 
-    console.log(typeof result[0]._id);
-
-    result = result.map((item)=>{
-      item._id = item._id.toString()
-      return item
-    }) 
-  // db에서 받아온 result의 ._id는 문자열처럼 보이지만 
-  // new ObjectId를 통한 BSON (BinaryJSON) 객체이기 때문에
-  // .toString()을 통하여 문자열로 변환해주어야 props로 전달 가능능
+    result = result.map((item) => {
+      item._id = item._id.toString();
+      return item;
+    });
+    // db에서 받아온 result의 ._id의 값은 문자열처럼 보이지만 ("16진수24자리")
+    // new ObjectId를 통한 BSON (BinaryJSON) 객체이기 때문에
+    // .toString()을 통하여 문자열로 변환해주어야 props로 전달 가능
 
     return (
       <div className="list-bg">
@@ -518,8 +543,35 @@
     );
   }
   ```
+
+- 글 삭제 요청을 받아줄 server 만들기 ( pages/api/post/delete.js )
+
+  ```javascript
+  import { connectDB } from "@/util/database";
+  import { ObjectId } from "mongodb";
+
+  export default async function handler(req, res) {
+    if (req.method == "DELETE") {
+      // method에 대한 예외처리
+      try {
+        // try catch로 db삭제 중 발생할 서버측 에러에 대한 예외처리
+        const cluster = await connectDB;
+        const db = cluster.db("forum");
+        await db.collection("post").deleteOne({ _id: new ObjectId(req.body) });
+        // db.collection.deleteOne({filter})는 조건에 맞는 document를 collection에서 삭제해준다
+      } catch (error) {
+        return res.status(500).json("서버 오류: " + error);
+      }
+      return res.status(200).json("삭제 완료");
+    }
+    return res.status(400).json("잘못된 요청입니다.");
+  }
+  ```
+
 - useEffect()를 활용하여 db를 받아올 수도 있지만, 검색엔진 노출 측면에서 단점이 있다.
+
   - useEffect() 활용 코드 예시
+
   ```javascript
   'use client'
   export default function ListItem(){
@@ -532,14 +584,11 @@
     )
   }
   ```
+
   - useEffect()는 페이지 로드 순서가 html보다 후순위 이다.  
-  즉, html이 다 로드되고나서야 useEffect()가 읽히기때문에  
-  검색엔진 봇들이 정보수집을 못하여 검색노출에 불리하다.
-<br/>
-
-## 11. 삭제기능 만들기 2 (Ajax 추가내용과 에러처리)
-
-<br/>
+     즉, html이 다 로드되고나서야 useEffect()가 읽히기때문에  
+     검색엔진 봇들이 정보수집을 못하여 검색노출에 불리하다.
+    <br/>
 
 ## 12. 삭제기능 만들기 3 (query string / URL parameter)
 

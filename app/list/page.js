@@ -6,13 +6,11 @@ export default async function List() {
   const cluster = await connectDB;
   const db = cluster.db("forum");
   let result = await db.collection("post").find().toArray();
-  
-  console.log(result[0]._id, typeof result[0]._id);
-  
-  result = result.map((item)=>{
-    item._id = item._id.toString()
-    return item
-  }) 
+
+  result = result.map((item) => {
+    item._id = item._id.toString();
+    return item;
+  });
 
   return (
     <div className="list-bg">
