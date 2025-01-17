@@ -620,6 +620,32 @@
 
 ## 13. static rendering, dynamic rendering, cache
 
+- 기능구현 이후 성능향상을 위한 작업 ( 렌더링, 캐싱 )
+- static / dynamic rendering
+  - `npm run build`를 하면 터미널에서 프로젝트 파일명(Route) 앞에 '○' 와'f' 기호가 있다.
+    - React문법으로 이루어진 project를 브라우저가 이해할 수 있도록 html,css,js 문법으로 바꾸어 html 페이지로 변환하는 과정
+  - '○'기호는 static rendering
+    - 유저가 페이지 요청을 하면 `npm run build`때 만들어 놓은 html 페이지를 그대로 보여줌
+    - 전송 속도가 빠르다는 장점이 있음.
+  - 'f'기호는 dynamic rendering
+    - 유저가 페이지 요청을 하면 `npm run build`떄 만들어 놓은 html 페이지를 새로 만들어서 보내줌
+    - data 동기화가 가능하다는 장점이 있음. ( 유저가 많으면 server / db에 과부하가 올수 있음. )
+    - `fetch('url',{cache:'no-store'})`, `useSearchParams()`, `cookies()`,  
+      `headers()`, `[dynamic route]` 사용 시 자동으로 dynamic rendering이 된다.
+  - static / dynamic rendering 강제로 전환하기 - dynamic 예약어를 사용
+    - 파일 상단에 `export const dynamic = 'force-dynamic' ( or force-static )`
+- Cache (캐싱)
+  - dynamic rendering의 단점인 server/db 과부하를 방지하기 위한 방법
+  - html 완성본 or GET요청 결과물을 저장소에 저장해두고 요청이 들어올 시 저장해 둔 완성본을 재사용
+  - 캐싱은 서버자원을 절약할 수 있고, 캐싱된 데이터는 하드용량을 차지하지만,  
+    하드는 저렴하고 크니까 크게 중요하진 않다.
+  - `await fetch('/url', {cache: 'force-cache'})` (기본 설정값)
+  - `await fetch('/url', {cache: 'no-store'})` (캐싱 안함 = 실시간 데이터가 중요할때 사용)
+  - `await fetch('/url', {next: {revalidate: 60 }})` (60초 마다 캐싱 요청)
+  - 페이지 전체를 캐싱하기 - revalidate 예약어를 사용
+  - 파일 상단에 `export const revalidate = 60`
+    - 페이지 전체가 60초마다 html을 새로 그리고 저장소에 html을 저장함
+
 <br/>
 
 ## 14. JWT, session, OAuth 설명시간

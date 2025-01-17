@@ -2,6 +2,7 @@ import { connectDB } from "@/util/database";
 import HomeLink from "./HomeLink";
 import ListItem from "./ListItem";
 
+export const dynamic = "force-dynamic";
 export default async function List() {
   const cluster = await connectDB;
   const db = cluster.db("forum");
