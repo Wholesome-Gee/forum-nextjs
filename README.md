@@ -675,7 +675,99 @@
   <br/>
 
 ## 15. 회원기능 만들기 : Auth.js 사용한 소셜로그인
+- Github OAuth로 로그인 구현하기
+- 터미널에 `npm i next-auth`
+- auth 설정 파일 생성 ( pages/api/auth/[...nextauth].js )
+  ```javascript
+  import NextAuth from "next-auth";
+  import GithubProvider from "next-auth/providers/github";
 
+  export const authOptions = {
+    providers: [
+      GithubProvider({
+        clientId: 'Ov23li3Wa1OoSS7Gk5qq',
+        clientSecret: '9b9869d5e441a6e67f513668278076ee3ca9e56a',
+      }),
+      // GoogleProvider, FacebookProvider등 여러가지 추가 가능
+    ],
+    secret : process.env.SECRET_CODE
+    // .env ➡️ SECRET_CODE="secretcode"
+  };
+  export default NextAuth(authOptions); 
+  ```
+- Login 버튼 component 만들기 ( /LogInBtn.js )
+  ```javascript
+  'use client';
+  // onClick() 사용으로 인해 client componenet 사용
+  import { signIn } from "next-auth/react";
+
+  export default function LogInBtn() {
+    return <button onClick={() => { signIn() }}>로그인</button>
+    // signIn(), signOut() 으로 간단하게 로그인,로그아웃 구현 가능
+  } 
+  ```
+- Login된 유저의 정보 받아보기 ( JWT )
+  - client component에서 받아보는법 ( layout.js)
+    - 부모 component에 `<SessionProvider>` import하고,  
+      자식 component에서 `useSession()` 으로 session을 받아올 수 있다.
+    - useSession()은 처리속도가 늦기에 별로 효율적이지 않으므로 보통 server component에서 유저정보를 가져오는 방식을 많이 쓴다.
+    ```javascript
+    // 부모 component
+    'use client'
+
+    import { SessionProvider } from "next-auth/react"
+
+    export default function Layout({ children }){
+      return (
+        <SessionProvider>
+          {children}
+        </SessionProvider>
+      )
+    }
+
+    // 자식 component
+    'use client'
+
+    import { useSession } from 'next-auth/react'
+    export default function Page(){
+      let session  = useSession();
+      if (session) {
+        console.log(session)
+      }
+    ```
+  - sever component에서 받아보는법 ( layout.js)
+    - 부모 component에서 `getServerSession()` 비동기 처리 
+    ```javascript
+    import { Geist, Geist_Mono } from "next/font/google";
+    import "./globals.css";
+    import Link from "next/link";
+    import LogInBtn from "./LogInBtn";
+    import { getServerSession } from "next-auth";
+    import { authOptions } from "@/pages/api/auth/[...nextauth]";
+    
+    // 기본적인 중간코드 생략 
+    
+    export default async function RootLayout({ children }) {
+      let session = await getServerSession(authOptions)
+      // await getServerSession(authOptions)으로 유저의 정보를 받아온다.
+      console.log(session);
+      
+      return (
+        <html lang="en">
+          <body className={`${geistSans.variable} ${geistMono.variable}`}>
+            <div className="navbar"> 
+              <Link href="/" className="logo">Appleforum</Link> 
+              <Link href="/list">List</Link> 
+              <LogInBtn />
+              <!-- 로그인 버튼 생성 -->
+            </div>  
+            {children}
+          </body>
+        </html>
+      );
+    }
+    ```
+  
 <br/>
 
 ## 16. 회원기능 만들기 : OAuth + session방식 사용하기
