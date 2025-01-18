@@ -675,7 +675,7 @@
   <br/>
 
 ## 15. 회원기능 만들기 : Auth.js 사용한 소셜로그인
-- Github OAuth로 로그인 구현하기
+- Github OAuth로 로그인 구현하기 ( next-auth / JWT 방식)
 - 터미널에 `npm i next-auth`
 - auth 설정 파일 생성 ( pages/api/auth/[...nextauth].js )
   ```javascript
@@ -767,11 +767,108 @@
       );
     }
     ```
+- 삼항연산자로 LogInBtn, LogOutBtn 구현 (숙제)
   
 <br/>
 
 ## 16. 회원기능 만들기 : OAuth + session방식 사용하기
+- ( DB adapter /Session방식 )
+- `npm uninstall mongodb` ➡️ `npm i mongodb@4` mongodb 4버전 설치
+- `npm i @next-auth/mongodb-adapter` mongodb-adapter 설치]
+- mongodb-adapter 설정 파일 생성 ( pages/api/auth/[...nextauth].js )
+  ```javascript 
+  import { connectDB } from "@/util/database";
+  import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
+  import NextAuth from "next-auth";
+  import GithubProvider from "next-auth/providers/github";
 
+  export const authOptions = {
+    providers: [
+      GithubProvider({
+        clientId: 'Ov23li3Wa1OoSS7Gk5qq',
+        clientSecret: '9b9869d5e441a6e67f513668278076ee3ca9e56a',
+      }),
+    ],
+    secret : process.env.SECRET_CODE,
+    adapter: MongoDBAdapter(connectDB)
+  };
+  export default NextAuth(authOptions); 
+  ```
+- LogIn, LogOut 버튼 추가 ( /layout.js )
+```javascript
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import Link from "next/link";
+import LogInBtn from "./LogInBtn";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import LogOutBtn from "./LogOutBtn";
+
+//중간 코드 생략 
+
+export default async function RootLayout({ children }) {
+  let session = await getServerSession(authOptions)
+  console.log(session);
+  
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <div className="navbar"> 
+          <Link href="/" className="logo">Appleforum</Link> 
+          <Link href="/list">List</Link> 
+          {session?<span>{session.user.name} <LogOutBtn/></span> : <LogInBtn/>}
+          <!-- if문대신 삼항연산자 사용 -->
+        </div>  
+        {children}
+      </body>
+    </html>
+  );
+}
+
+```
+- 게시글 수정/삭제시 유저정보를 통해 본인 게시글인지 확인하기
+  - 게시글 작성 시 유저가 게시글제목+내용+email을 보낼 수 있도록 수정 ( pages/api/post/nex.js )  
+  ```javascript
+  import { connectDB } from "@/util/database";
+  import { authOptions } from "../auth/[...nextauth]";
+  import { getServerSession } from "next-auth";
+  // authOptions, getServerSession import
+
+  export default async function handler(req, res) {
+    let session = await getServerSession(req,res,authOptions)
+    // Server에서 getServerSession으로 session 받아올때 (req,res,authOptions)을 꼭 해주기
+    if (req.method == "GET") {
+      console.log('GET요청을 보낼 수 없습니다.');
+      return res.status(400).json("GET 처리실패")
+    } 
+    if (!session) {
+      return res.status(400).json("session is null")
+    }
+    req.body.author = session.user.email
+    // req.body에 있는 title, content 외에 author key를 추가하여 session.user.email 담아주기
+    try {
+      const cluster = await connectDB
+      const db = cluster.db('forum');
+      await db.collection('post').insertOne(req.body)
+
+      if (req.body.title == '') {
+        return res.status(400).json("제목을 입력하세요.")
+      }
+      return res.redirect('/list')
+    } catch (error) {
+      res.status(500).json(`Server Error: ${error.name}: ${error.message}`)
+    }
+  }
+
+  /*
+  status code 
+  200은 처리 완료, 
+  400은 처리 실패(유저측 문제), 
+  500은 처리 실패(서버측 문제)
+  */
+
+
+  ```
 <br/>
 
 ## 17. 회원기능 만들기 : 아이디/비번 + JWT 사용하기

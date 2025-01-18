@@ -4,6 +4,7 @@ import Link from "next/link";
 import LogInBtn from "./LogInBtn";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import LogOutBtn from "./LogOutBtn";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +23,7 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   let session = await getServerSession(authOptions)
-  console.log(session);
+  // console.log(session);
   
   return (
     <html lang="en">
@@ -30,7 +31,7 @@ export default async function RootLayout({ children }) {
         <div className="navbar"> 
           <Link href="/" className="logo">Appleforum</Link> 
           <Link href="/list">List</Link> 
-          <LogInBtn />
+          {session?<span>{session.user.name} <LogOutBtn/></span> : <LogInBtn/>}
         </div>  
         {children}
       </body>

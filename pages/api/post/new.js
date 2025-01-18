@@ -1,12 +1,18 @@
 import { connectDB } from "@/util/database";
+import { authOptions } from "../auth/[...nextauth]";
+import { getServerSession } from "next-auth";
 
 
 export default async function handler(req, res) {
+  let session = await getServerSession(req,res,authOptions)
   if (req.method == "GET") {
     console.log('GET요청을 보낼 수 없습니다.');
     return res.status(400).json("GET 처리실패")
   } 
-
+  if (!session) {
+    return res.status(400).json("session is null")
+  }
+  req.body.author = session.user.email
   try {
     const cluster = await connectDB
     const db = cluster.db('forum');
